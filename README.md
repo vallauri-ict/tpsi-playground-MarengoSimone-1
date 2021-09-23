@@ -1,5 +1,9 @@
 # tpsi-playground-MarengoSimone-1
 
-_Stud. Marengo Simone_
+### _Stud. Marengo Simone_
 
-### Repository per gli esercizi di TPSIT di teoria
+ Repository per gli esercizi di TPSIT di teoria
+
+# Argomenti svolti:
+
+- Node JS

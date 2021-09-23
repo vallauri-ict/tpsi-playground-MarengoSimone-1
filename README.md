@@ -7,3 +7,4 @@
 # Argomenti svolti:
 
 - Node JS
+- TypeScript

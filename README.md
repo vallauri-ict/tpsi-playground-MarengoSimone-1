@@ -1,10 +1,10 @@
-# tpsi-playground-MarengoSimone-1
+# 💻 tpsi-playground-MarengoSimone-1
 
 ### _Stud. Marengo Simone_
 
- Repository per gli esercizi di TPSIT di teoria
+ Repository per gli esercizi di TPSIT di teoria - 5^B TPSIT
+ 
+# 🎓📚 Argomenti svolti:
 
-# Argomenti svolti:
-
-- Node JS
-- TypeScript
+1. [TypeScript](https://www.typescriptlang.org/) 
+2. [Node.js](https://nodejs.org/it/)

@@ -3,4 +3,8 @@
      
 ## Obiettivo:
 Creare un file dispatcher che gestisca le risorse e le pagine richieste del client. Il **dispatcher** rappresenta l'interfaccia di front-end di un web server, cioè il modulo che
-si prende in carico le **Http Request** e ritorna al chiamante le corrispondenti **Http Response**. E' un componente che permette di differenziare le chiamate effettuate dall'utente, effettuando la selezione sulla base della risorsa richiesta
+si prende in carico le **Http Request** e ritorna al chiamante le corrispondenti **Http Response**. E' un componente che permette di differenziare le chiamate effettuate dall'utente, effettuando la selezione sulla base della risorsa richiesta.
+
+## Descrizione:
+L'esercizio è piuttosto complicato ed ha subito diverse modifiche nel corso dello sviluppo. Per conoscere i dettagli del **dispatcher** seguire il seguente link: http://robertomana.it/
+ed aprire il pdf relativo a Node JS nella sezione Tecnologie. E' presente un'intera sezione dedicata.

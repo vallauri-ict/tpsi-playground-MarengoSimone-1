@@ -33,12 +33,39 @@ $(document).ready(function() {
                     $("<td>").appendTo(tr).html(person[key]);
                 }
                 let td = $("<td>").appendTo(tr);
-                $("<button>").appendTo(td).html("dettagli");
+                $("<button>").appendTo(td).prop("persona",person).html("dettagli").on("click",visualizzaDettagli);
                 td = $("<td>").appendTo(tr);
-                $("<button>").appendTo(td).html("elimina");
+                $("<button>").appendTo(td).prop("persona",person).html("elimina").on("click",elimina);
             }
         });
 
+    }
+
+    function visualizzaDettagli()
+    {
+        let persona = $(this).prop("persona").name;
+        let requestDettagli = inviaRichiesta("GET", "/api/dettagli",{"persona":persona});
+        requestDettagli.fail(errore);
+        requestDettagli.done(function(dettagli){
+           console.log(dettagli);
+            _divDettagli.show();
+
+            $("<img>").prop("src",dettagli.img).appendTo(_divDettagli);
+            $("<h5>").html(dettagli.name).appendTo(_divDettagli);
+            $("<p>").text("<b>gender:</b>" + dettagli.gender);
+        });
+    }
+
+    function elimina()
+    {
+        let persona = $(this).prop("persona").name;
+        let requestElimina = inviaRichiesta("DELETE", "/api/elimina",{"persona":persona});
+        requestElimina.fail(errore);
+        requestElimina.done(function(data){
+           console.log(data);
+            _divDettagli.show();
+            window.location.reload();
+        });
     }
 
  

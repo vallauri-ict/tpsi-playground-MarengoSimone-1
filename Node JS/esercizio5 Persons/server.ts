@@ -1,4 +1,5 @@
 import * as _http from "http"
+import { json } from "stream/consumers";
 let HEADERS = require("./headers.json");
 let dispatcher = require("./dispatcher.ts");
 let persons = require("./persons");
@@ -43,5 +44,43 @@ dispatcher.addListener("GET","/api/persone",function(req,res) {
     }
     res.writeHead(200, HEADERS.json);
     res.write(JSON.stringify(persone));
+    res.end();
+})
+
+dispatcher.addListener("GET","/api/dettagli",function(req,res) {
+    let persona = req["GET"].persona;
+    let jsonDettagli = {};
+    for (const person of persons["results"]) {
+        let name = person.name.title + " " + person.name.first + " " + person.name.last
+        if(persona == name)
+        {
+            jsonDettagli = {
+                "img": person.picture.thumbnail,
+                "name": person.name.title + " " + person.name.first + " " + person.name.last,
+                "gender":person.gender,
+                "address":person.location,
+                "email":person.email,
+                "dob": person.dob
+            };
+        }
+    }
+    res.writeHead(200, HEADERS.json);
+    res.write(JSON.stringify(jsonDettagli));
+    res.end();
+})
+
+
+dispatcher.addListener("DELETE","/api/elimina",function(req,res) {
+    let persona = req["BODY"].persona;
+    
+    for (const person of persons["results"]) {
+        let name = person.name.title + " " + person.name.first + " " + person.name.last
+        if(persona == name)
+        {
+            ///// DELETE
+        }
+    }
+    res.writeHead(200, HEADERS.json);
+    res.write(JSON.stringify({"ris":"ok"}));
     res.end();
 })

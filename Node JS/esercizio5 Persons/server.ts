@@ -47,40 +47,57 @@ dispatcher.addListener("GET","/api/persone",function(req,res) {
     res.end();
 })
 
-dispatcher.addListener("GET","/api/dettagli",function(req,res) {
-    let persona = req["GET"].persona;
-    let jsonDettagli = {};
-    for (const person of persons["results"]) {
+dispatcher.addListener("PATCH","/api/dettagli",function(req,res) {
+    let persona = req["BODY"].persona;
+    let trovato = false;
+    let person;
+    for (person of persons["results"]) {
         let name = person.name.title + " " + person.name.first + " " + person.name.last
         if(persona == name)
         {
-            jsonDettagli = {
-                "img": person.picture.thumbnail,
-                "name": person.name.title + " " + person.name.first + " " + person.name.last,
-                "gender":person.gender,
-                "address":person.location,
-                "email":person.email,
-                "dob": person.dob
-            };
+            trovato = true;
+            break;
         }
     }
-    res.writeHead(200, HEADERS.json);
-    res.write(JSON.stringify(jsonDettagli));
-    res.end();
+    if(trovato)
+    {
+        res.writeHead(200, HEADERS.json);
+        res.write(JSON.stringify(person));
+        res.end();
+    }
+    else
+    {
+        res.writeHead(404, HEADERS.text);
+        res.write("Persona non trovata");
+        res.end();
+    }
 })
 
 
 dispatcher.addListener("DELETE","/api/elimina",function(req,res) {
     let persona = req["BODY"].persona;
-    
-    for (const person of persons["results"]) {
-        let name = person.name.title + " " + person.name.first + " " + person.name.last
+    let trovato = false;
+    let i;
+
+    for (i = 0; i < persons.results.length; i++) {
+        let name = persons.results[i].name.title + " " + persons.results[i].name.first + " " + persons.results[i].name.last
         if(persona == name)
         {
-            ///// DELETE
+            trovato = true;
+            break;
         }
     }
-    res.writeHead(200, HEADERS.json);
-    res.write(JSON.stringify({"ris":"ok"}));
-    res.end();
+    if(trovato)
+    {
+        persons.results.splice(i,1);
+        res.writeHead(200, HEADERS.json);
+        res.write(JSON.stringify("Persona eliminata correttamente"));
+        res.end();
+    }
+    else
+    {
+        res.writeHead(404, HEADERS.text);
+        res.write("Persona non trovata");
+        res.end();
+    }  
 })

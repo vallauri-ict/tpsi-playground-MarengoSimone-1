@@ -3,6 +3,7 @@ $(document).ready(function() {
     let _lstNazioni = $("#lstNazioni");
     let _tabStudenti = $("#tabStudenti");
     let _divDettagli = $("#divDettagli");
+    let selectedNation;
 
     _divDettagli.hide();
 
@@ -20,13 +21,17 @@ $(document).ready(function() {
     });
 
     function visualizzaPersone(){
-        let nation = $(this).text();
-        let requestPersone = inviaRichiesta("GET", "/api/persone", {"nazione":nation});
+        if($(this).text())
+        {
+            selectedNation = $(this).text();
+        }
+        let requestPersone = inviaRichiesta("GET", "/api/persone", {"nazione":selectedNation});
         requestPersone.fail(errore);
         requestPersone.done(function(persons){
             //console.log(persons);
             //_tabStudenti.html("");
             _tabStudenti.empty();
+            _divDettagli.hide();
             for (const person of persons) {
                 let tr = $("<tr>").appendTo(_tabStudenti);
                 for (const key in person) {
@@ -35,7 +40,7 @@ $(document).ready(function() {
                 let td = $("<td>").appendTo(tr);
                 $("<button>").appendTo(td).prop("persona",person).html("dettagli").on("click",visualizzaDettagli);
                 td = $("<td>").appendTo(tr);
-                $("<button>").appendTo(td).prop("persona",person).html("elimina").on("click",elimina);
+                $("<button>").appendTo(td).prop("persona",person).html("elimina").addClass("elimina");
             }
         });
 
@@ -44,29 +49,35 @@ $(document).ready(function() {
     function visualizzaDettagli()
     {
         let persona = $(this).prop("persona").name;
-        let requestDettagli = inviaRichiesta("GET", "/api/dettagli",{"persona":persona});
+        let requestDettagli = inviaRichiesta("PATCH", "/api/dettagli",{"persona":persona});
         requestDettagli.fail(errore);
         requestDettagli.done(function(dettagli){
            console.log(dettagli);
-            _divDettagli.show();
+            _divDettagli.show(1000);
 
-            $("<img>").prop("src",dettagli.img).appendTo(_divDettagli);
-            $("<h5>").html(dettagli.name).appendTo(_divDettagli);
-            $("<p>").text("<b>gender:</b>" + dettagli.gender);
+            $(".card-img-top").prop("src",dettagli.picture.thumbnail);
+            $(".card-title").html(persona);
+            let s = `<b>gender:</b> ${dettagli.gender}</br>`;
+            s += `<b>address:</b> ${JSON.stringify(dettagli.location)}</br>`;
+            s += `<b>email:</b> ${dettagli.email}</br>`;
+            s += `<b>dob:</b> ${JSON.stringify(dettagli.dob)}</br>`;
+            $(".card-text").html(s);
         });
     }
 
-    function elimina()
-    {
+    /* Metodo alternativo con le classi 
+    _tabStudenti.on("click","button.elimina",function(){
+
+    })*/
+    /* Pseudoselettore CSS che punta a tutti i button che contengono la parola elimina*/
+    _tabStudenti.on("click","button:contains(elimina)",function(){
         let persona = $(this).prop("persona").name;
         let requestElimina = inviaRichiesta("DELETE", "/api/elimina",{"persona":persona});
         requestElimina.fail(errore);
-        requestElimina.done(function(data){
-           console.log(data);
-            _divDettagli.show();
+        requestElimina.done(function(message){
+           alert(message);
+            visualizzaPersone();
             window.location.reload();
         });
-    }
-
- 
+    });
 })

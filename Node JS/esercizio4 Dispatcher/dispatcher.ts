@@ -2,10 +2,11 @@ import * as _http from "http"
 import * as _url from "url"
 import * as _fs from "fs"
 import * as _mime from "mime"
-let HEADERS = require("./headers.json");
+import * as _querystring from "query-string"
+import {HEADERS} from "./headers";
 let paginaErrore : string;
 
-class Dispatcher {  
+export class Dispatcher {  
     prompt:string = ">>> "
     // ogni listener è costituito da un JSON del tipo
     // {"risorsa":"callback"}
@@ -36,14 +37,51 @@ class Dispatcher {
     }
 
     dispatch(req,res){
+        let metodo = req.method.toUpperCase();
+        if(metodo == "GET")
+        {
+            this.innerDispatch(req,res);
+        }
+        else
+        {
+            let parametriBody : string = "";
+            req.on("data",function (data) {
+                parametriBody += data;
+            });
+            
+            let parsedParam = {};
+            let _this = this; // puntatore alla classe
+            req.on("end",function () {
+               try {
+                   // se i parametri sono in JSON va a buon fine
+                   // altrimenti passo nel catch (il formato è URL-ENCODED)
+                   parsedParam = JSON.parse(parametriBody);
+                } 
+                catch (error) {
+                    parsedParam = _querystring.parse(parametriBody);
+                }
+                finally{
+                    req["BODY"] = parsedParam;
+                    _this.innerDispatch(req,res);
+                } 
+            });
+        }
+    }
+
+    innerDispatch(req,res){
         // Lettura di metodo, risorsa e parametri
         let metodo = req.method;
         let url = _url.parse(req.url,true); // true = parsifico anche i parametri
         let risorsa = url.pathname;
         let parametri = url.query;
-
+    
+        req["GET"] = parametri;
+    
         console.log(`${this.prompt} ${metodo}: ${risorsa} ${JSON.stringify(parametri)}`);
-
+        if(req["BODY"]){
+            console.log(`      ${JSON.stringify(req["BODY"])}`);
+        }
+    
         if(risorsa.startsWith("/api/")){
             if(risorsa in this.listeners[metodo])
             {
@@ -62,7 +100,7 @@ class Dispatcher {
         else{
             staticListener(req,res,risorsa);
         }
-    }
+    }  
 }  
 
 function staticListener(req,res,risorsa) {
@@ -101,6 +139,3 @@ function init() {
         }
     });
 }
-
-
-module.exports = new Dispatcher();

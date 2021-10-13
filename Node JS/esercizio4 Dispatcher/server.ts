@@ -1,7 +1,9 @@
 import * as _http from "http"
-let HEADERS = require("./headers.json");
-let dispatcher = require("./dispatcher.ts");
+import {HEADERS} from "./headers";
+import {Dispatcher} from "./dispatcher";
 let port : number = 1337;
+
+let dispatcher : Dispatcher = new Dispatcher();
 
 let server = _http.createServer(function(req,res){
     dispatcher.dispatch(req,res);
@@ -9,9 +11,17 @@ let server = _http.createServer(function(req,res){
 server.listen(port);
 console.log("server in ascolto sulla porta: " + port);
 
-// Registrazione del servizio
+// Registrazione dei servizi
 dispatcher.addListener("POST","/api/servizio1",function(req,res) {
     res.writeHead(200, HEADERS.json);
-    res.write(JSON.stringify({"ris":"ok"}));
+    let nome = req["BODY"].nome;
+    res.write(JSON.stringify({"ris":nome, "id":req["GET"].id}));
+    res.end();
+})
+
+dispatcher.addListener("GET","/api/servizio2",function(req,res) {
+    res.writeHead(200, HEADERS.json);
+    let nome = req["GET"].nome;
+    res.write(JSON.stringify({"ris":nome}));
     res.end();
 })

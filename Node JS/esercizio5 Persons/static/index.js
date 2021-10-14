@@ -3,7 +3,14 @@ $(document).ready(function() {
     let _lstNazioni = $("#lstNazioni");
     let _tabStudenti = $("#tabStudenti");
     let _divDettagli = $("#divDettagli");
+    let _btnFirst = $("#first");
+    let _btnPrevious = $("#prev");
+    let _btnNext = $("#next");
+    let _btnLast = $("#last");
     let selectedNation;
+    let detailNames = [];
+    let click = false;
+    let index = 0;
 
     _divDettagli.hide();
 
@@ -21,6 +28,7 @@ $(document).ready(function() {
     });
 
     function visualizzaPersone(){
+        detailNames = [];
         if($(this).text())
         {
             selectedNation = $(this).text();
@@ -34,6 +42,7 @@ $(document).ready(function() {
             _divDettagli.hide();
             for (const person of persons) {
                 let tr = $("<tr>").appendTo(_tabStudenti);
+                detailNames.push(person.name);
                 for (const key in person) {
                     $("<td>").appendTo(tr).html(person[key]);
                 }
@@ -48,7 +57,15 @@ $(document).ready(function() {
 
     function visualizzaDettagli()
     {
-        let persona = $(this).prop("persona").name;
+        let persona;
+        if(click == true)
+        {
+            persona = detailNames[index];
+        }
+        else
+        {
+            persona = $(this).prop("persona").name;
+        } 
         let requestDettagli = inviaRichiesta("PATCH", "/api/dettagli",{"persona":persona});
         requestDettagli.fail(errore);
         requestDettagli.done(function(dettagli){
@@ -63,7 +80,50 @@ $(document).ready(function() {
             s += `<b>dob:</b> ${JSON.stringify(dettagli.dob)}</br>`;
             $(".card-text").html(s);
         });
+        click = false;
     }
+
+    _btnFirst.on("click",function(){
+        _btnPrevious.css("visibility","hidden");
+        _btnNext.css("visibility","visible");
+        click = true;
+        index = 0;
+        visualizzaDettagli();
+    });
+
+    _btnLast.on("click",function(){
+        _btnPrevious.css("visibility","visible");
+        _btnNext.css("visibility","hidden");
+        click = true;
+        index = detailNames.length - 1;
+        visualizzaDettagli();
+    });
+
+    _btnPrevious.on("click",function(){
+        if(index>=0)
+		{
+			index--;
+			_btnNext.css("visibility","visible");
+		}
+		if(index==0)
+		{
+			_btnPrevious.css("visibility","hidden");
+		}
+        click = true;
+        visualizzaDettagli();
+    }); 
+    
+    _btnNext.on("click",function(){
+		_btnPrevious.css("visibility","visible");
+		index++;
+		if(index==detailNames.length-1)
+		{
+			_btnNext.css("visibility","hidden");
+		}
+        click = true;
+        visualizzaDettagli();
+    });
+
 
     /* Metodo alternativo con le classi 
     _tabStudenti.on("click","button.elimina",function(){

@@ -1,9 +1,9 @@
 import * as _http from "http"
-import {HEADERS} from "./headers";
-import {Dispatcher} from "./dispatcher";
+import { Dispatcher } from "./dispatcher";
+import HEADERS from "./headers.json";
 let port : number = 1337;
 
-let dispatcher : Dispatcher = new Dispatcher();
+let dispatcher = new Dispatcher();
 
 let server = _http.createServer(function(req,res){
     dispatcher.dispatch(req,res);

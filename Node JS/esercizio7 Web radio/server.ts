@@ -1,10 +1,9 @@
-import { json } from 'stream/consumers';
 import radios from './radios.json';
 import states from "./states.json";
 import * as _fs from 'fs';
 import * as _mime from 'mime';
 import * as _http from "http"
-import {HEADERS} from "./headers";
+import HEADERS from "./headers.json";
 import {Dispatcher} from "./dispatcher";
 let port : number = 1337;
 
@@ -26,7 +25,7 @@ dispatcher.addListener("GET","/api/update",function(req,res) {
     }
     for (const radio of radios) {
         for (const state of states) {
-            if(radio.state == state.name)
+            if(radio.state == state.value)
             {
                 let count = parseInt(state.stationcount);
                 count++;
@@ -51,4 +50,52 @@ dispatcher.addListener("GET","/api/elenco",function(req,res) {
     res.writeHead(200,HEADERS.json);
     res.write(JSON.stringify(states));
     res.end();
+});
+
+dispatcher.addListener("POST","/api/radios",function(req,res) {
+    let regione = req["BODY"].regione;
+    let elencoRadio = [];
+    if(regione == 'tutti')
+    {
+        for (const radio of radios) {
+            elencoRadio.push(radio);
+        }
+    }
+    else
+    {
+        for (const radio of radios) {
+            if(radio.state == regione)
+            {
+                elencoRadio.push(radio);
+            }
+        }
+    }
+    res.writeHead(200,HEADERS.json);
+    res.write(JSON.stringify(elencoRadio));
+    res.end();
+});
+
+dispatcher.addListener("POST","/api/like",function(req,res) {
+    let id = req["BODY"].id;
+
+    for (const radio of radios) {
+        if(radio.id == id)
+        {
+            let vote = parseInt(radio.votes);
+            vote++;
+            radio.votes = vote.toString();
+            _fs.writeFile("./radios.json", JSON.stringify(radios), function (err) {
+                if (err) {
+                  res.writeHead(404, HEADERS.text);
+                  res.write(err);
+                }
+                else {
+                  res.writeHead(200, HEADERS.json);
+                  res.write(JSON.stringify(radio.votes));
+                }
+                res.end();
+            })
+            break;
+        }
+    }
 });

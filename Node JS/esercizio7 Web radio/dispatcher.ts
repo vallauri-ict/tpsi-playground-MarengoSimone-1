@@ -3,7 +3,7 @@ import * as _url from "url"
 import * as _fs from "fs"
 import * as _mime from "mime"
 import * as _querystring from "query-string"
-import {HEADERS} from "./headers";
+import HEADERS from "./headers.json";
 let paginaErrore : string;
 
 export class Dispatcher {  

@@ -9,4 +9,5 @@ Realizzare l'esercizio base per i futuri esercizi con MongoDB. La base di parten
 - Tramite i comandi **npm install mongodb e npm install @types/mongodb** è stato scaricato MongoDB nel progetto. 
 - Successivamente è stato incluso MongoDB nel progetto tramite **l'import**
 - E' stato modificato il solo file server.ts: nella gestione dei servizi sono stati introdotti alcuni metodi come il **client.connect** e **db.find()**
-- Il primo servizio, invece, introduce l'inserimento di nuovi **doucments** nel db tramite **db.insertOne()**
+- Il primo servizio, invece, introduce l'inserimento di nuovi **documents** nel db tramite **db.insertOne()**
+- Infine sono stati introdotti i metodi **updateOne()** e **deleteMany()**

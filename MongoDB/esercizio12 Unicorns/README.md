@@ -17,3 +17,5 @@ Per l'esecuzione delle query sono stati usati i seguenti operatori:
 - **.project()** per stabilire i campi da visualizzare o meno (oppure projection)
 - **.sort()** per eseguire un ordinamento
 - **.findOne()** per trovare un singolo record
+- **updateOne()**,**deleteOne()** e **insertOne()** per la modifica, la cancellazione e l'aggiunta dei record
+- **.distinct()** per visualizzare tutti i dati ripetuti solo una 1 volta

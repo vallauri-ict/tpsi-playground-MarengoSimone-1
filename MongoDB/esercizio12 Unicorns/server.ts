@@ -288,3 +288,95 @@ mongoClient.connect(CONNECTIONSTRING,function(err,client){
     }
 });
 
+// Query 14
+mongoClient.connect(CONNECTIONSTRING,function(err,client){
+    if(!err){
+        let db = client.db(DB_NAME);
+        let collection = db.collection("unicorns");
+        collection.distinct("loves",{"gender":"f"},function(err,data){
+            if(!err){
+                console.log("Query 14",data);
+            }
+            else{
+                console.log("Errore esecuzione query " + err.message);
+            }
+            client.close();
+        });
+    }
+    else{
+        console.log("Errore nella connessione al DB " + err.message);
+    }
+});
+
+// Query 15
+mongoClient.connect(CONNECTIONSTRING,function(err,client){
+    if(!err){
+        let db = client.db(DB_NAME);
+        let collection = db.collection("unicorns");
+        collection.insertOne({"name":"Apollo","gender":"f","loves":["apple","lemon"]},function(err,data){
+            if(!err){
+                console.log("Query 15",data);
+                collection.deleteMany({"name":"Apollo"},function(err,data){
+                    if(!err)
+                    {
+                        console.log("Query 15b",data);
+                    }
+                    else
+                    {
+                        console.log("Errore esecuzione query " + err.message);
+                    }
+                    client.close(); // va messo sempre nella query più interna
+                });
+            }
+            else{
+                console.log("Errore esecuzione query " + err.message);
+            }
+        });
+    }
+    else{
+        console.log("Errore nella connessione al DB " + err.message);
+    }
+});
+
+// Query 16
+mongoClient.connect(CONNECTIONSTRING,function(err,client){
+    if(!err){
+        let db = client.db(DB_NAME);
+        let collection = db.collection("unicorns");
+        // terzo parametro {upsert:true} -> se il record da aggiornare non esiste
+        // viene creato automaticamente
+        collection.updateOne({"name":"Pilot"},{$inc: {"vampires":1}},function(err,data){
+            if(!err){
+                console.log("Query 16",data);
+            }
+            else{
+                console.log("Errore esecuzione query " + err.message);
+            }
+            client.close();
+        });
+    }
+    else{
+        console.log("Errore nella connessione al DB " + err.message);
+    }
+});
+
+// Query 17
+mongoClient.connect(CONNECTIONSTRING,function(err,client){
+    if(!err){
+        let db = client.db(DB_NAME);
+        let collection = db.collection("unicorns");
+        collection.updateOne({"name":"Aurora"},{"$addToSet":{"loves":"carrot"},"$inc":{weight:10}},function(err,data){
+            if(!err)
+            {
+                console.log("Query 17",data);
+            }
+            else{
+                console.log("Errore esecuzione query " + err.message);
+            }
+            client.close();
+        });
+    }
+    else{
+        console.log("Errore nella connessione al DB " + err.message);
+    }
+});

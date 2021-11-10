@@ -26,6 +26,27 @@ mongoClient.connect(CONNECTIONSTRING,function(err,client){
     }
 });
 
+// Query 1b: [CON LE PROMISE]
+mongoClient.connect(CONNECTIONSTRING,function(err,client){
+    if(!err){
+        let db = client.db(DB_NAME);
+        let collection = db.collection("unicorns");
+        let req = collection.find({"weight":{"$lte":800,"$gte":700}}).toArray();
+        req.then(function(data){
+            console.log("Query 1b",data);
+        });
+        req.catch(function(err){
+            console.log("Errore esecuzione query " + err.message);
+        })
+        req.finally(function(){
+            client.close();
+        })
+    }
+    else{
+        console.log("Errore nella connessione al DB " + err.message);
+    }
+});
+
 // Query 2:
 mongoClient.connect(CONNECTIONSTRING,function(err,client){
     if(!err){

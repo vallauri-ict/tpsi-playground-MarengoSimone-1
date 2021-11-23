@@ -288,6 +288,152 @@ mongoClient.connect(CONNECTIONSTRING,function(err,client){
     }
 });
 
+// Query 11:
+mongoClient.connect(CONNECTIONSTRING,function(err,client){
+    if(!err){
+        let db = client.db(DB_NAME);
+        let collection = db.collection("unicorns");
+        let req = collection.aggregate([
+            {"$match":{"gender":{"$exists":true}}},
+            {"$group":{"_id":"$gender","mediaPeso":{"$avg":"$weight"}}},
+        ]).toArray();
+        req.then(function(data){
+            console.log("Query 11",data);
+        });
+        req.catch(function(err){
+            console.log("Errore esecuzione query " + err.message);
+        })
+        req.finally(function(){
+            client.close();
+        })
+    }
+    else{
+        console.log("Errore nella connessione al DB " + err.message);
+    }
+});
+
+// Query 12:
+mongoClient.connect(CONNECTIONSTRING,function(err,client){
+    if(!err){
+        let db = client.db(DB_NAME);
+        let collection = db.collection("unicorns");
+        let req = collection.aggregate([
+            {"$match":{"loves":{"$in":["apple"]}}},
+            {"$group":{"_id":"$gender","kills":{"$sum":"$vampires"}}},
+        ]).toArray();
+        req.then(function(data){
+            console.log("Query 12",data);
+        });
+        req.catch(function(err){
+            console.log("Errore esecuzione query " + err.message);
+        })
+        req.finally(function(){
+            client.close();
+        })
+    }
+    else{
+        console.log("Errore nella connessione al DB " + err.message);
+    }
+});
+
+// Query 13:
+mongoClient.connect(CONNECTIONSTRING,function(err,client){
+    if(!err){
+        let db = client.db(DB_NAME);
+        let collection = db.collection("unicorns");
+        let req = collection.aggregate([
+            {"$project":{"loves":1}},
+            {"$unwind":"$loves"},
+            {"$group":{"_id":"$loves", "totale":{"$sum":1}}},
+            {"$sort":{"totale":-1}}
+        ]).toArray();
+        req.then(function(data){
+            console.log("Query 13",data);
+        });
+        req.catch(function(err){
+            console.log("Errore esecuzione query " + err.message);
+        })
+        req.finally(function(){
+            client.close();
+        })
+    }
+    else{
+        console.log("Errore nella connessione al DB " + err.message);
+    }
+});
+
+// Query 14:
+mongoClient.connect(CONNECTIONSTRING,function(err,client){
+    if(!err){
+        let db = client.db(DB_NAME);
+        let collection = db.collection("students");
+        let req = collection.aggregate([
+            {"$project":{"nome":1,"classe":1,"media":{"$avg":"$voti"}}},
+            {"$group":{"_id":"$classe","mediaClasse":{"$avg":"$media"}}},
+            {"$match":{"$expr": {"$gt": ["$mediaClasse",6]}}},
+            {"$sort":{"mediaClasse":-1}}
+        ]).toArray();
+        req.then(function(data){
+            console.log("Query 14",data);
+        });
+        req.catch(function(err){
+            console.log("Errore esecuzione query " + err.message);
+        })
+        req.finally(function(){
+            client.close();
+        })
+    }
+    else{
+        console.log("Errore nella connessione al DB " + err.message);
+    }
+});
+
+// Query 15:
+mongoClient.connect(CONNECTIONSTRING,function(err,client){
+    if(!err){
+        let db = client.db(DB_NAME);
+        let collection = db.collection("students");
+        let req = collection.aggregate([
+            //{"$project":{"nome":1,"classe":1,"nato":1}}
+            {"$match":{"$expr":{"$lt":[{"$year":"$nato"},2004]}}}
+        ]).toArray();
+        req.then(function(data){
+            console.log("Query 15",data);
+        });
+        req.catch(function(err){
+            console.log("Errore esecuzione query " + err.message);
+        })
+        req.finally(function(){
+            client.close();
+        })
+    }
+    else{
+        console.log("Errore nella connessione al DB " + err.message);
+    }
+});
+
+// Query 16
+mongoClient.connect(CONNECTIONSTRING,function(err,client){
+    if(!err){
+        let db = client.db(DB_NAME);
+        let collection = db.collection("students");
+        let req = collection.aggregate([
+            {"$match":{"$expr":{"$eq":[{"$year":"$nato"},2000]}}}
+        ]).toArray();
+        req.then(function(data){
+            console.log("Query 16",data);
+        });
+        req.catch(function(err){
+            console.log("Errore esecuzione query " + err.message);
+        })
+        req.finally(function(){
+            client.close();
+        })
+    }
+    else{
+        console.log("Errore nella connessione al DB " + err.message);
+    }
+});
 
 
 

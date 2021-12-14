@@ -9,7 +9,7 @@ const mongoClient = _mongodb.MongoClient;
 //const CONNECTIONSTRING = "mongodb://127.0.0.1:27017"; accesso locale
 // accesso ad Atlas:
 const CONNECTIONSTRING = "mongodb+srv://simone:admin@cluster0.kmj18.mongodb.net/5B?retryWrites=true&w=majority"
-const DB_NAME = "5B";
+const DB_NAME = "unicorns";
 
 
 let port : number = 1337;
@@ -77,6 +77,22 @@ app.use("/",function(req,res,next){
         }
     });
 });
+
+app.use("/api/getCollections",function(req,res,next){
+    let db = req["client"].db(DB_NAME) as _mongodb.Db;
+    let request = db.listCollections().toArray();
+    request.then(function(data){
+        res.send(data);
+    });
+    request.catch(function(err){
+        res.status(503).send("Errore esecuzione query");
+    })
+    request.finally(function(){
+        req["client"].close();
+    })
+});
+
+
 
 app.get("/api/servizio1",function(req,res,next){
     let unicorn = req.query.nome;

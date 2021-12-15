@@ -65,6 +65,7 @@ app.use("/",function(req,res,next){
 // **********************************************************************
 // Elenco delle routes di risposta al client
 // **********************************************************************
+// middleware di apertura della connessione
 app.use("/",function(req,res,next){
     mongoClient.connect(CONNECTIONSTRING,function(err,client){
         if(err){
@@ -78,6 +79,7 @@ app.use("/",function(req,res,next){
     });
 });
 
+// lettura delle collezioni presenti nel DB
 app.use("/api/getCollections",function(req,res,next){
     let db = req["client"].db(DB_NAME) as _mongodb.Db;
     let request = db.listCollections().toArray();
@@ -92,15 +94,23 @@ app.use("/api/getCollections",function(req,res,next){
     })
 });
 
+// middleware di intercettazione dei parametri
+let currentCollection = "";
+let id = "";
+app.use("/api/:collection/:id?",function(req,res,next){
+    currentCollection = req.params.collection;
+    id = req.params.id;
+    next();
+});
 
 
-app.get("/api/servizio1",function(req,res,next){
-    let unicorn = req.query.nome;
-    if(unicorn)
+// listener specifici:
+app.get("/api/*",function(req,res,next){
+    let db = req["client"].db(DB_NAME) as _mongodb.Db;
+    let collection = db.collection(currentCollection);
+    if(!id)
     {
-        let db = req["client"].db(DB_NAME) as _mongodb.Db;
-        let collection = db.collection("unicorns");
-        let request = collection.find({"name":unicorn}).toArray();
+        let request = collection.find().toArray();
         request.then(function(data){
             res.send(data);
         });
@@ -113,19 +123,8 @@ app.get("/api/servizio1",function(req,res,next){
     }
     else
     {
-        res.status(400).send("Parametro mancante: UnicornName");
-        req["client"].close();
-    }
-});
-
-app.patch("/api/servizio2",function(req,res,next){
-    let unicorn = req.body.nome;
-    let incVampires = req.body.vampires;
-    if(unicorn && incVampires)
-    {
-        let db = req["client"].db(DB_NAME) as _mongodb.Db;
-        let collection = db.collection("unicorns");
-        let request = collection.updateOne({"name":unicorn},{$inc:{vampires:incVampires}});
+        let oId = new _mongodb.ObjectId(id);
+        let request = collection.find({"_id":oId}).toArray();
         request.then(function(data){
             res.send(data);
         });
@@ -136,30 +135,6 @@ app.patch("/api/servizio2",function(req,res,next){
             req["client"].close();
         })
     }
-    else
-    {
-        res.status(400).send("Parametro mancante: name o vampires");
-        req["client"].close();
-    }
-});
-
-app.get("/api/servizio3/:gender/:hair",function(req,res,next){
-    let gender = req.params.gender;
-    let hair = req.params.hair;
-    // la if sull'esistenza dei parametri non serve perchè
-    // se non c'è un match esatto nell'url non entra neanche nel servizio
-        let db = req["client"].db(DB_NAME) as _mongodb.Db;
-        let collection = db.collection("unicorns");
-        let request = collection.find({"$and":[{"gender":gender},{"hair":hair}]}).toArray();
-        request.then(function(data){
-            res.send(data);
-        });
-        request.catch(function(err){
-            res.status(503).send("Errore esecuzione query");
-        })
-        request.finally(function(){
-            req["client"].close();
-        })
 });
 
 // **********************************************************************

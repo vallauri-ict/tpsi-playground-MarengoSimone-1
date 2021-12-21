@@ -97,6 +97,7 @@ app.use("/api/getCollections",function(req,res,next){
 // middleware di intercettazione dei parametri
 let currentCollection = "";
 let id = "";
+// id? campo facoltativo
 app.use("/api/:collection/:id?",function(req,res,next){
     currentCollection = req.params.collection;
     id = req.params.id;
@@ -110,7 +111,7 @@ app.get("/api/*",function(req,res,next){
     let collection = db.collection(currentCollection);
     if(!id)
     {
-        let request = collection.find().toArray();
+        let request = collection.find().project({"_id":1,"name":1}).toArray();
         request.then(function(data){
             res.send(data);
         });
@@ -124,7 +125,7 @@ app.get("/api/*",function(req,res,next){
     else
     {
         let oId = new _mongodb.ObjectId(id);
-        let request = collection.find({"_id":oId}).toArray();
+        let request = collection.findOne({"_id":oId});
         request.then(function(data){
             res.send(data);
         });
@@ -135,6 +136,22 @@ app.get("/api/*",function(req,res,next){
             req["client"].close();
         })
     }
+});
+
+app.post("/api/*",function(req,res,next){
+    let db = req["client"].db(DB_NAME) as _mongodb.Db;
+    let collection = db.collection(currentCollection);
+
+    let request = collection.insertOne(req["body"]);
+    request.then(function(data){
+        res.send(data);
+    });
+    request.catch(function(err){
+        res.status(503).send("Errore esecuzione query");
+    })
+    request.finally(function(){
+        req["client"].close();
+    })
 });
 
 // **********************************************************************
@@ -151,5 +168,5 @@ app.use("/", function (req, res, next) {
 });
 
 app.use(function(err, req, res, next) {
-    console.log("Errore codice server",err.message)
+    console.log("*************** ERRORE CODICE SERVER",err.message, "***************");
 });

@@ -111,7 +111,7 @@ app.get("/api/*",function(req,res,next){
     let collection = db.collection(currentCollection);
     if(!id)
     {
-        let request = collection.find().project({"_id":1,"name":1}).toArray();
+        let request = collection.find().toArray();
         request.then(function(data){
             res.send(data);
         });
@@ -141,8 +141,55 @@ app.get("/api/*",function(req,res,next){
 app.post("/api/*",function(req,res,next){
     let db = req["client"].db(DB_NAME) as _mongodb.Db;
     let collection = db.collection(currentCollection);
-
     let request = collection.insertOne(req["body"]);
+    request.then(function(data){
+        res.send(data);
+    });
+    request.catch(function(err){
+        res.status(503).send("Errore esecuzione query");
+    })
+    request.finally(function(){
+        req["client"].close();
+    })
+});
+
+app.delete("/api/*",function(req,res,next){
+    let db = req["client"].db(DB_NAME) as _mongodb.Db;
+    let collection = db.collection(currentCollection);
+    let _id = new _mongodb.ObjectId(id);
+    let request = collection.deleteOne({"_id":_id});
+    request.then(function(data){
+        res.send(data);
+    });
+    request.catch(function(err){
+        res.status(503).send("Errore esecuzione query");
+    })
+    request.finally(function(){
+        req["client"].close();
+    })
+});
+
+app.patch("/api/*",function(req,res,next){
+    let db = req["client"].db(DB_NAME) as _mongodb.Db;
+    let collection = db.collection(currentCollection);
+    let _id = new _mongodb.ObjectId(id);
+    let request = collection.updateOne({"_id":_id},{"$set":req["BODY"]});
+    request.then(function(data){
+        res.send(data);
+    });
+    request.catch(function(err){
+        res.status(503).send("Errore esecuzione query");
+    })
+    request.finally(function(){
+        req["client"].close();
+    })
+});
+
+app.put("/api/*",function(req,res,next){
+    let db = req["client"].db(DB_NAME) as _mongodb.Db;
+    let collection = db.collection(currentCollection);
+    let _id = new _mongodb.ObjectId(id);
+    let request = collection.replaceOne({"_id":_id},req["BODY"]);
     request.then(function(data){
         res.send(data);
     });

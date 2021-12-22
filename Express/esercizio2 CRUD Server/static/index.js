@@ -45,42 +45,80 @@ $(document).ready(function() {
             for (const item of data) {
                 let tr = $("<tr>").appendTo(table.children("tbody"));
 
-                let td = $("<td>").appendTo(tr).text(item["_id"]).prop("id",item._id).on("click",dettagli);
-                td = $("<td>").appendTo(tr).text(item.name).prop("id",item._id).on("click",dettagli);
+                let td = $("<td>").appendTo(tr).text(item["_id"]).prop("id",item._id).prop("method","get").on("click",dettagli);
+                td = $("<td>").appendTo(tr).text(item.name).prop("id",item._id).prop("method","get").on("click",dettagli);
                 td = $("<td>").appendTo(tr);
                 // creo 3 div, il resto è gestito dal css (3 icone)
-                for (let i = 0; i < 3; i++) {
-                    $("<div>").appendTo(td);
-                }
+                $("<div>").appendTo(td).prop({"id":item._id,"method":"patch"}).on("click",dettagli);
+
+                $("<div>").appendTo(td).prop({"id":item._id,"method":"put"}).on("click",dettagli);
+
+                $("<div>").appendTo(td).prop({"id":item._id,"method":"delete"}).on("click",elimina);
             }
         })
     });
 
+    function elimina()
+    {
+        let request = inviaRichiesta("delete","/api/" + currentCollection + "/" + $(this).prop("id"));
+        request.fail(errore);
+        request.done(function(data){
+            alert("Documento rimosso correttamente");
+            aggiorna();
+        })
+    }
+
     function dettagli()
     {
+        let method = $(this).prop("method").toUpperCase();
         let id = $(this).prop("id");
-        let request = inviaRichiesta("get","/api/" + currentCollection + "/" + id);
+        let request = inviaRichiesta("GET","/api/" + currentCollection + "/" + id);
         request.fail(errore);
         request.done(function(data){
             console.log(data);
-            let content = "";
-            for (let key in data) {
-                content += "<strong>" + key + ":</strong> " + data[key] + "<br>";
+            if(method == "GET")
+            {
+                let content = "";
+                for (let key in data) {
+                    content += "<strong>" + key + ":</strong> " + data[key] + "<br>";
+                }
+                divDettagli.html(content);
             }
-            divDettagli.html(content);
+            else
+            {
+                divDettagli.empty();
+                let textarea = $("<textarea>");
+                delete(data._id);
+                textarea.val(JSON.stringify(data,null,2));
+                textarea.appendTo(divDettagli);
+                textarea.css({"height":textarea.get(0).scrollHeight + "px"});
+                visualizzaPulsanteInvia(method,id);
+            }
         })
     }
 
     $("#btnAdd").on("click",function(){
         divDettagli.empty();
         let textarea = $("<textarea>").val("{ }").appendTo(divDettagli);
+        visualizzaPulsanteInvia("POST");
+    });
 
+    function aggiorna()
+    {
+        let event = jQuery.Event('click');
+        event.target = divCollections.find('input[type=radio]:checked')[0];
+        divCollections.trigger(event);
+        divDettagli.empty();
+    }
+
+    function visualizzaPulsanteInvia(method,id="")
+    {
         let btnInvia = $("<button>").text("INVIA").appendTo(divDettagli);
         btnInvia.on("click",function(){
             let param = "";
             try 
             {
-                param = JSON.parse(textarea.val());
+                param = JSON.parse(divDettagli.children("textarea").val());
             } 
             catch (error)
             {
@@ -88,14 +126,14 @@ $(document).ready(function() {
                 return;
             }
 
-            let request = inviaRichiesta("post","/api/" + currentCollection, param);
+            let request = inviaRichiesta(method,"/api/" + currentCollection + "/" + id, param);
             request.fail(errore);
             request.done(function(data){
-                alert("Inserimento eseguito correttamente");
+                alert("Operazione eseguita correttamente");
                 divDettagli.empty();
-                divCollections.trigger("click","input[type=radio]");
+                aggiorna();
             });
         });
-    });
+    }
 
 });

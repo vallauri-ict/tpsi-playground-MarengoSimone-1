@@ -2,6 +2,7 @@ import * as http from "http";
 import * as fs from "fs";
 import express from "express";
 import * as bodyParser from "body-parser";
+import cors from "cors";
 
 // MongoDB
 import * as _mongodb from "mongodb";
@@ -61,6 +62,24 @@ app.use("/",function(req,res,next){
     }
     next();
 });
+
+// 5. middleware cors, gestisce le richieste cross origin
+const whitelist = ["http://localhost:4200", "http://localhost:1337"];
+const corsOptions = {
+ origin: function(origin, callback) {
+ if (!origin)
+ return callback(null, true);
+ if (whitelist.indexOf(origin) === -1) {
+ var msg = 'The CORS policy for this site does not ' +
+ 'allow access from the specified Origin.';
+ return callback(new Error(msg), false);
+ } 
+ else
+ return callback(null, true);
+ },
+ credentials: true
+};
+app.use("/", cors(corsOptions));
 
 // **********************************************************************
 // Elenco delle routes di risposta al client

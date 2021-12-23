@@ -9,7 +9,7 @@ const mongoClient = _mongodb.MongoClient;
 //const CONNECTIONSTRING = "mongodb://127.0.0.1:27017"; accesso locale
 // accesso ad Atlas:
 const CONNECTIONSTRING = "mongodb+srv://simone:admin@cluster0.kmj18.mongodb.net/5B?retryWrites=true&w=majority"
-const DB_NAME = "unicorns";
+const DB_NAME = "recipeBook";
 
 
 let port : number = 1337;
@@ -72,7 +72,7 @@ app.use("/",function(req,res,next){
             res.status(503).send("Errore nella connessione al DB");
         }
         else{
-            console.log("Connected succesfully");
+            console.log(">>>>>> Connected succesfully");
             req["client"] = client;
             next();
         }
@@ -111,7 +111,7 @@ app.get("/api/*",function(req,res,next){
     let collection = db.collection(currentCollection);
     if(!id)
     {
-        let request = collection.find().toArray();
+        let request = collection.find(req["query"]).toArray();
         request.then(function(data){
             res.send(data);
         });

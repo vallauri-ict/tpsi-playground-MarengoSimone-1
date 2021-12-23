@@ -29,34 +29,38 @@ $(document).ready(function() {
         currentCollection = $(this).val();
         let request = inviaRichiesta("get","/api/" + currentCollection);
         request.fail(errore);
-        request.done(function aggiornaTabella(data){
-            console.log(data);
-            divIntestazione.find("strong").eq(0).text(currentCollection);
-            divIntestazione.find("strong").eq(1).text(data.length);
-            if(currentCollection == "unicorns")
-            {
-                filters.show();
-            }
-            else
-            {
-                filters.hide();
-            }
-            table.children("tbody").empty();
-            for (const item of data) {
-                let tr = $("<tr>").appendTo(table.children("tbody"));
-
-                let td = $("<td>").appendTo(tr).text(item["_id"]).prop("id",item._id).prop("method","get").on("click",dettagli);
-                td = $("<td>").appendTo(tr).text(item.name).prop("id",item._id).prop("method","get").on("click",dettagli);
-                td = $("<td>").appendTo(tr);
-                // creo 3 div, il resto è gestito dal css (3 icone)
-                $("<div>").appendTo(td).prop({"id":item._id,"method":"patch"}).on("click",dettagli);
-
-                $("<div>").appendTo(td).prop({"id":item._id,"method":"put"}).on("click",dettagli);
-
-                $("<div>").appendTo(td).prop({"id":item._id,"method":"delete"}).on("click",elimina);
-            }
-        })
+        request.done(disegnaTabella);
     });
+        
+        
+    function disegnaTabella(data){
+        console.log(data);
+        divIntestazione.find("strong").eq(0).text(currentCollection);
+        divIntestazione.find("strong").eq(1).text(data.length);
+        if(currentCollection == "unicorns")
+        {
+            filters.show();
+        }
+        else
+        {
+            filters.hide();
+        }
+        table.children("tbody").empty();
+        for (const item of data) {
+            let tr = $("<tr>").appendTo(table.children("tbody"));
+
+            let td = $("<td>").appendTo(tr).text(item["_id"]).prop({"id":item._id,"method":"get"}).on("click",dettagli);
+            td = $("<td>").appendTo(tr).text(item.name).prop({"id":item._id,"method":"get"}).on("click",dettagli);
+            td = $("<td>").appendTo(tr);
+
+            // creo 3 div, il resto è gestito dal css (3 icone)
+            $("<div>").appendTo(td).prop({"id":item._id,"method":"patch"}).on("click",dettagli);
+
+            $("<div>").appendTo(td).prop({"id":item._id,"method":"put"}).on("click",dettagli);
+
+            $("<div>").appendTo(td).prop({"id":item._id}).on("click",elimina);
+        }
+    }
 
     function elimina()
     {
@@ -72,6 +76,7 @@ $(document).ready(function() {
     {
         let method = $(this).prop("method").toUpperCase();
         let id = $(this).prop("id");
+
         let request = inviaRichiesta("GET","/api/" + currentCollection + "/" + id);
         request.fail(errore);
         request.done(function(data){
@@ -103,14 +108,6 @@ $(document).ready(function() {
         visualizzaPulsanteInvia("POST");
     });
 
-    function aggiorna()
-    {
-        let event = jQuery.Event('click');
-        event.target = divCollections.find('input[type=radio]:checked')[0];
-        divCollections.trigger(event);
-        divDettagli.empty();
-    }
-
     function visualizzaPulsanteInvia(method,id="")
     {
         let btnInvia = $("<button>").text("INVIA").appendTo(divDettagli);
@@ -136,4 +133,32 @@ $(document).ready(function() {
         });
     }
 
+    function aggiorna()
+    {
+        var event = jQuery.Event('click');
+        event.target = divCollections.find('input[type=radio]:checked')[0];
+        divCollections.trigger(event);
+        //divDettagli.empty();
+    }
+
+    $("#btnFind").on("click", function(){
+		let filter = {}
+		let hair = $("#lstHair").children("option:selected").val()
+		if (hair)
+			filter["hair"]=hair.toLowerCase();
+		
+		let male = filters.find("input[type=checkbox]").first()
+				.is(":checked")
+		let female = filters.find("input[type=checkbox]").last()
+				.is(":checked")
+		if(male && !female)
+			filter["gender"]='m';
+		else if(female && !male)
+			filter["gender"]='f';
+		
+		let request = inviaRichiesta("get", "/api/" + currentCollection, filter)
+		request.fail(errore)
+		request.done(disegnaTabella);	
+
+	})
 });

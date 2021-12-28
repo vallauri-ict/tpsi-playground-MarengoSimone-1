@@ -99,7 +99,7 @@ app.use("/",function(req,res,next){
 });
 
 // lettura delle collezioni presenti nel DB
-app.use("/api/getCollections",function(req,res,next){
+app.get("/api/getCollections",function(req,res,next){
     let db = req["client"].db(DB_NAME) as _mongodb.Db;
     let request = db.listCollections().toArray();
     request.then(function(data){
@@ -192,7 +192,7 @@ app.patch("/api/*",function(req,res,next){
     let db = req["client"].db(DB_NAME) as _mongodb.Db;
     let collection = db.collection(currentCollection);
     let _id = new _mongodb.ObjectId(id);
-    let request = collection.updateOne({"_id":_id},{"$set":req["BODY"]});
+    let request = collection.updateOne({"_id":_id},{"$set":req["body"]});
     request.then(function(data){
         res.send(data);
     });
@@ -208,7 +208,7 @@ app.put("/api/*",function(req,res,next){
     let db = req["client"].db(DB_NAME) as _mongodb.Db;
     let collection = db.collection(currentCollection);
     let _id = new _mongodb.ObjectId(id);
-    let request = collection.replaceOne({"_id":_id},req["BODY"]);
+    let request = collection.replaceOne({"_id":_id},req["body"]);
     request.then(function(data){
         res.send(data);
     });

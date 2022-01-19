@@ -9,11 +9,11 @@ import * as _mongodb from "mongodb";
 const mongoClient = _mongodb.MongoClient;
 //const CONNECTIONSTRING = "mongodb://127.0.0.1:27017"; accesso locale
 // accesso ad Atlas:
-const CONNECTIONSTRING = "mongodb+srv://simone:admin@cluster0.kmj18.mongodb.net/5B?retryWrites=true&w=majority"
+const CONNECTIONSTRING = process.env.MONGODB_URI || "mongodb+srv://simone:admin@cluster0.kmj18.mongodb.net/5B?retryWrites=true&w=majority" // heroku app
 const DB_NAME = "recipeBook";
 
-
-let port : number = 1337;
+// se la prima variabile esiste assegna quel valore, altrimenti mette 1337
+let port : number = parseInt(process.env.PORT) || 1337
 let app = express();
 
 let server = http.createServer(app);
@@ -64,7 +64,7 @@ app.use("/",function(req,res,next){
 });
 
 // 5. middleware cors, gestisce le richieste cross origin
-const whitelist = ["http://localhost:4200", "http://localhost:1337"];
+const whitelist = ["http://localhost:4200", "http://localhost:1337","https://simone-marengo-crud-server.herokuapp.com"];
 const corsOptions = {
  origin: function(origin, callback) {
  if (!origin)

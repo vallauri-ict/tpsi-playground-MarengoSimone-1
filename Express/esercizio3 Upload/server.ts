@@ -3,8 +3,8 @@ import * as fs from "fs";
 import express from "express";
 import * as bodyParser from "body-parser";
 import cors from "cors";
-// MongoDB
-import * as _mongodb from "mongodb";
+import * as _mongodb from "mongodb"; // MongoDB
+import fileUpload, { UploadedFile } from "express-fileupload";
 
 const mongoClient = _mongodb.MongoClient;
 //const CONNECTIONSTRING = "mongodb://127.0.0.1:27017"; accesso locale
@@ -84,6 +84,11 @@ const corsOptions = {
 };
 app.use("/", cors(corsOptions) as any);
 
+// 6. fileUpload: gestione dimensione massima dei file da caricare
+app.use(fileUpload({
+    "limits ": { "fileSize ": (10 * 1024 * 1024) } // 10 MB
+}));
+
 // **********************************************************************
 // Elenco delle routes di risposta al client
 // **********************************************************************
@@ -117,6 +122,55 @@ app.get("/api/images",function(req,res,next){
         req["client"].close();
     })
 });
+
+app.post("/api/uploadBinary",function(req,res,next){
+    let db = req["client"].db(DB_NAME) as _mongodb.Db;
+    let collection = db.collection("images");
+    if (!req.files || Object.keys(req.files).length == 0 || !req.body.username) 
+        res.status(400).send('Username o immagine mancante');
+    else
+    {
+        let _file = req.files.img as UploadedFile;
+        _file.mv('./static/img/' + _file["name"], function(err) {
+            if (err)
+                res.status(500).json(err.message);
+            else
+            {
+                let user = {
+                    "username": req.body.username,
+                    "img": _file.name
+                }
+                let request = collection.insertOne(user);
+                request.then(function(data){
+                    res.send(data);
+                });
+                request.catch(function(err){
+                    res.status(503).send("Errore esecuzione query");
+                })
+                request.finally(function(){
+                    req["client"].close();
+                })
+            }
+        })
+    }
+});
+
+app.post("/api/uploadBase64",function(req,res,next){
+    let db = req["client"].db(DB_NAME) as _mongodb.Db;
+    let collection = db.collection("images");
+    let request = collection.insertOne(req.body);
+    request.then(function(data){
+        res.send(data);
+    });
+    request.catch(function(err){
+        res.status(503).send("Errore esecuzione query");
+    })
+    request.finally(function(){
+        req["client"].close();
+    })
+});
+
+
 
 // **********************************************************************
 // Default route (risorsa non trovata) e route di gestione degli errori 

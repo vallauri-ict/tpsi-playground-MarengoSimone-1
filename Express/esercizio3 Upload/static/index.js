@@ -2,6 +2,8 @@ $(document).ready(function() {
  let txtUser = $("#txtUser");
  let txtFile = $("#txtFile");
 
+ txtFile.val("");
+ txtUser.val("");
  aggiornaTabella()
 	
  function aggiornaTabella(){
@@ -32,8 +34,7 @@ $(document).ready(function() {
 		return;
 	}
 	
-	let form = $("form").get(0)
-	let formData = new FormData();		
+	let formData = new FormData(); // consente di caricare file binari		
 	formData.append('username', username);		
 	formData.append('img', file);		
 			

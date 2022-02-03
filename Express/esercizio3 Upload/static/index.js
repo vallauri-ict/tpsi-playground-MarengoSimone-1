@@ -70,7 +70,7 @@ $(document).ready(function() {
  });
 
 
- $("#btnCloudinary").on("click", function() {
+ $("#btnCloudinaryBase64").on("click", function() {
 	let file = txtFile.prop('files')[0]	
 	if (!file || !txtUser.val()){
 		alert("prego, inserire uno username e scegliere un file")
@@ -81,8 +81,8 @@ $(document).ready(function() {
 	let reader = new FileReader();   
 	reader.readAsDataURL(file) 
 	reader.onload = function(){	
-		let rq = inviaRichiesta("POST", "/api/cloudinary", 
-						{"username":txtUser.val(), "img":reader.result})
+		let rq = inviaRichiesta("POST", "/api/cloudinaryBase64", 
+						{"username":txtUser.val(), "image":reader.result})
 		rq.fail(errore)
 		rq.done(function(data){
 			alert("upload eseguito correttamente")
@@ -93,6 +93,26 @@ $(document).ready(function() {
  });
 });
 
+$("#btnCloudinaryBinario").on("click", function() {
+	let file = txtFile.prop('files')[0]
+	let username = txtUser.val()
+	if (!file || !txtUser.val()){
+		alert("prego, inserire uno username e scegliere un file")
+		return;
+	}
+	
+	let formData = new FormData(); // consente di caricare file binari		
+	formData.append('username', username);		
+	formData.append('img', file);		
+			
+	// l'upload delle immagini NON può essere eseguito in GET
+	let rq = inviaRichiestaMultipart("POST", "/api/uploadBinary", formData);
+	rq.fail(errore)
+	rq.done(function(data){
+		alert("upload eseguito correttamente")
+		aggiornaTabella()
+	})
+ });
 
 /* *********************** resizeAndConvert() ****************************** */
 /* resize (tramite utilizzo della libreria PICA.JS) and base64 conversion    */

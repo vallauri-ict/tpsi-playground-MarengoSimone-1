@@ -5,6 +5,16 @@ import * as bodyParser from "body-parser";
 import cors from "cors";
 import * as _mongodb from "mongodb"; // MongoDB
 import fileUpload, { UploadedFile } from "express-fileupload";
+import ENVIRONMENT from "./environment.json";
+import cloudinary, { UploadApiResponse } from "cloudinary";
+
+// Configurazione di CLoudinary
+cloudinary.v2.config({
+    cloud_name: ENVIRONMENT.CLOUD_NAME,
+    api_key: ENVIRONMENT.API_KEY,
+    api_secret: ENVIRONMENT.API_SECRET,
+    // secure:true // https
+});
 
 const mongoClient = _mongodb.MongoClient;
 //const CONNECTIONSTRING = "mongodb://127.0.0.1:27017"; accesso locale
@@ -13,23 +23,23 @@ const CONNECTIONSTRING = process.env.MONGODB_URI || "mongodb+srv://simone:admin@
 const DB_NAME = "5B";
 
 // se la prima variabile esiste assegna quel valore, altrimenti mette 1337
-let port : number = parseInt(process.env.PORT) || 1337
+let port: number = parseInt(process.env.PORT) || 1337
 let app = express();
 
 let server = http.createServer(app);
 
-server.listen(port,function(){
+server.listen(port, function () {
     console.log("server in ascolto sulla porta: " + port);
     init();
 });
 
 let paginaErrore = "";
-function init(){
-    fs.readFile("./static/error.html",function(err,data){
-        if(!err){
+function init() {
+    fs.readFile("./static/error.html", function (err, data) {
+        if (!err) {
             paginaErrore = data.toString();
         }
-        else{
+        else {
             paginaErrore = "<h2> Risorsa non trovata </h2>";
         }
     });
@@ -41,7 +51,7 @@ function init(){
 // 1. log
 app.use("/", function (req, res, next) {
     console.log(" -----> " + req.method + ":" + req.originalUrl);
-    next(); 
+    next();
 });
 
 // 2. static route
@@ -50,55 +60,58 @@ app.use("/", express.static("./static"));
 
 // 3. route di lettura parametri post
 app.use("/", bodyParser.json()); // intercetta i parametri in formato json
-app.use("/", bodyParser.urlencoded({"extended":true})); // parametri body
+app.use("/", bodyParser.urlencoded({ "extended": true })); // parametri body
 
 // 4. log dei parametri
-app.use("/",function(req,res,next){
-    if(Object.keys(req.query).length > 0){
-        console.log("      Parametri GET: ",req.query);
+app.use("/", function (req, res, next) {
+    if (Object.keys(req.query).length > 0) {
+        console.log("      Parametri GET: ", req.query);
     }
-    if(Object.keys(req.body).length > 0){
-        console.log("      Parametri BODY: ",req.body);
+    if (Object.keys(req.body).length > 0) {
+        console.log("      Parametri BODY: ", req.body);
     }
     next();
 });
 
 // 5. middleware cors, gestisce le richieste cross origin
-const whitelist = [ "https://simone-marengo-crud-server.herokuapp.com",
-                    "http://simone-marengo-crud-server.herokuapp.com",
-                    "http://localhost:1337",
-                    "http://localhost:4200"];
+const whitelist = ["https://simone-marengo-crud-server.herokuapp.com",
+    "http://simone-marengo-crud-server.herokuapp.com",
+    "http://localhost:1337",
+    "http://localhost:4200"];
 const corsOptions = {
- origin: function(origin, callback) {
- if (!origin)
- return callback(null, true);
- if (whitelist.indexOf(origin) === -1) {
- var msg = 'The CORS policy for this site does not ' +
- 'allow access from the specified Origin.';
- return callback(new Error(msg), false);
- } 
- else
- return callback(null, true);
- },
- credentials: true
+    origin: function (origin, callback) {
+        if (!origin)
+            return callback(null, true);
+        if (whitelist.indexOf(origin) === -1) {
+            var msg = 'The CORS policy for this site does not ' +
+                'allow access from the specified Origin.';
+            return callback(new Error(msg), false);
+        }
+        else
+            return callback(null, true);
+    },
+    credentials: true
 };
 app.use("/", cors(corsOptions) as any);
 
-// 6. fileUpload: gestione dimensione massima dei file da caricare
+// 6. binary fileUpload: gestione dimensione massima dei file da caricare
 app.use(fileUpload({
     "limits ": { "fileSize ": (10 * 1024 * 1024) } // 10 MB
 }));
+
+// 7. base64 fileUpload: limita la dimensione dei parametri POST
+app.use("/", express.json({ "limit": "10mb" }));
 
 // **********************************************************************
 // Elenco delle routes di risposta al client
 // **********************************************************************
 // middleware di apertura della connessione
-app.use("/",function(req,res,next){
-    mongoClient.connect(CONNECTIONSTRING,function(err,client){
-        if(err){
+app.use("/", function (req, res, next) {
+    mongoClient.connect(CONNECTIONSTRING, function (err, client) {
+        if (err) {
             res.status(503).send("Errore nella connessione al DB");
         }
-        else{
+        else {
             console.log(">>>>>> Connected succesfully");
             req["client"] = client;
             next();
@@ -108,46 +121,44 @@ app.use("/",function(req,res,next){
 
 
 // listener specifici:
-app.get("/api/images",function(req,res,next){
+app.get("/api/images", function (req, res, next) {
     let db = req["client"].db(DB_NAME) as _mongodb.Db;
     let collection = db.collection("images");
     let request = collection.find().toArray();
-    request.then(function(data){
+    request.then(function (data) {
         res.send(data);
     });
-    request.catch(function(err){
+    request.catch(function (err) {
         res.status(503).send("Errore esecuzione query");
     })
-    request.finally(function(){
+    request.finally(function () {
         req["client"].close();
     })
 });
 
-app.post("/api/uploadBinary",function(req,res,next){
+app.post("/api/uploadBinary", function (req, res, next) {
     let db = req["client"].db(DB_NAME) as _mongodb.Db;
     let collection = db.collection("images");
-    if (!req.files || Object.keys(req.files).length == 0 || !req.body.username) 
+    if (!req.files || Object.keys(req.files).length == 0 || !req.body.username)
         res.status(400).send('Username o immagine mancante');
-    else
-    {
+    else {
         let _file = req.files.img as UploadedFile;
-        _file.mv('./static/img/' + _file["name"], function(err) {
+        _file.mv('./static/img/' + _file["name"], function (err) {
             if (err)
                 res.status(500).json(err.message);
-            else
-            {
+            else {
                 let user = {
                     "username": req.body.username,
                     "img": _file.name
                 }
                 let request = collection.insertOne(user);
-                request.then(function(data){
+                request.then(function (data) {
                     res.send(data);
                 });
-                request.catch(function(err){
+                request.catch(function (err) {
                     res.status(503).send("Errore esecuzione query");
                 })
-                request.finally(function(){
+                request.finally(function () {
                     req["client"].close();
                 })
             }
@@ -155,21 +166,84 @@ app.post("/api/uploadBinary",function(req,res,next){
     }
 });
 
-app.post("/api/uploadBase64",function(req,res,next){
+app.post("/api/uploadBase64", function (req, res, next) {
     let db = req["client"].db(DB_NAME) as _mongodb.Db;
     let collection = db.collection("images");
     let request = collection.insertOne(req.body);
-    request.then(function(data){
+    request.then(function (data) {
         res.send(data);
     });
-    request.catch(function(err){
+    request.catch(function (err) {
         res.status(503).send("Errore esecuzione query");
     })
-    request.finally(function(){
+    request.finally(function () {
         req["client"].close();
     })
 });
 
+app.post("/api/cloudinaryBase64", function (req, res, next) {
+    cloudinary.v2.uploader.upload(req.body.image, { "folder": "Ese03 - Upload" })
+        .catch((error) => {
+            res.status(500).send("Errore nel caricamento del file su cloudinary");
+        })
+        .then((result: UploadApiResponse) => {
+            //res.send({"url":result.secure_url}) 
+            let db = req["client"].db(DB_NAME) as _mongodb.Db;
+            let collection = db.collection("images");
+            let user = {
+                "username": req.body.username,
+                "img": result.secure_url
+            }
+            let request = collection.insertOne(user);
+            request.then(function (data) {
+                res.send(data);
+            });
+            request.catch(function (err) {
+                res.status(503).send("Errore esecuzione query");
+            })
+            request.finally(function () {
+                req["client"].close();
+            })
+        })
+})
+
+app.post("/api/cloudinaryBinario", function (req, res, next) {
+    if (!req.files || Object.keys(req.files).length == 0 || !req.body.username)
+        res.status(400).send('Username o immagine mancante');
+    else {
+        let _file = req.files.img as UploadedFile;
+        let path = './static/img/' + _file["name"];
+        _file.mv(path, function (err) {
+            if (err)
+                res.status(500).json(err.message);
+            else {
+                cloudinary.v2.uploader.upload(path, { "folder": "Ese03 - Upload", use_filename: true })
+                    .catch((error) => {
+                        res.status(500).send("Errore nel caricamento del file su cloudinary");
+                    })
+                    .then((result: UploadApiResponse) => {
+                        //res.send({"url":result.secure_url}) 
+                        let db = req["client"].db(DB_NAME) as _mongodb.Db;
+                        let collection = db.collection("images");
+                        let user = {
+                            "username": req.body.username,
+                            "img": _file.name
+                        }
+                        let request = collection.insertOne(user);
+                        request.then(function (data) {
+                            res.send(data);
+                        });
+                        request.catch(function (err) {
+                            res.status(503).send("Errore esecuzione query");
+                        })
+                        request.finally(function () {
+                            req["client"].close();
+                        })
+                    })
+            }
+        })
+    }
+})
 
 
 // **********************************************************************
@@ -177,14 +251,14 @@ app.post("/api/uploadBase64",function(req,res,next){
 // **********************************************************************
 app.use("/", function (req, res, next) {
     res.status(404);
-    if(req.originalUrl.startsWith("/api/")){
+    if (req.originalUrl.startsWith("/api/")) {
         res.send("Risorsa non trovata");
     }
-    else{
+    else {
         res.send(paginaErrore);
     }
 });
 
-app.use(function(err, req, res, next) {
-    console.log("*************** ERRORE CODICE SERVER",err.message, "***************");
+app.use(function (err, req, res, next) {
+    console.log("*************** ERRORE CODICE SERVER", err.message, "***************");
 });

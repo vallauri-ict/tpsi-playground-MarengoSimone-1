@@ -91,9 +91,9 @@ $(document).ready(function() {
 
 	}
  });
-});
 
-$("#btnCloudinaryBinario").on("click", function() {
+
+$("#btnBinario").on("click", function() {
 	let file = txtFile.prop('files')[0]
 	let username = txtUser.val()
 	if (!file || !txtUser.val()){
@@ -106,7 +106,7 @@ $("#btnCloudinaryBinario").on("click", function() {
 	formData.append('img', file);		
 			
 	// l'upload delle immagini NON può essere eseguito in GET
-	let rq = inviaRichiestaMultipart("POST", "/api/uploadBinary", formData);
+	let rq = inviaRichiestaMultipart("POST", "/api/cloudinaryBinario", formData);
 	rq.fail(errore)
 	rq.done(function(data){
 		alert("upload eseguito correttamente")
@@ -169,4 +169,5 @@ function resizeAndConvert(file){
 			}		
 		}	
 	})	
-}
+  }
+});

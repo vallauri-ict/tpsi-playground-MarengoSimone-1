@@ -8,7 +8,7 @@ import fileUpload, { UploadedFile } from "express-fileupload";
 import ENVIRONMENT from "./environment.json";
 import cloudinary, { UploadApiResponse } from "cloudinary";
 
-// Configurazione di CLoudinary
+// Configurazione di Cloudinary
 cloudinary.v2.config({
     cloud_name: ENVIRONMENT.CLOUD_NAME,
     api_key: ENVIRONMENT.API_KEY,
@@ -23,7 +23,7 @@ const CONNECTIONSTRING = process.env.MONGODB_URI || "mongodb+srv://simone:admin@
 const DB_NAME = "5B";
 
 // se la prima variabile esiste assegna quel valore, altrimenti mette 1337
-let port: number = parseInt(process.env.PORT) || 1337
+let port: number = parseInt(process.env.PORT) || 1337;
 let app = express();
 
 let server = http.createServer(app);
@@ -209,41 +209,43 @@ app.post("/api/cloudinaryBase64", function (req, res, next) {
 
 app.post("/api/cloudinaryBinario", function (req, res, next) {
     if (!req.files || Object.keys(req.files).length == 0 || !req.body.username)
-        res.status(400).send('Username o immagine mancante');
+      res.status(400).send('Manca immagine o username');
     else {
-        let _file = req.files.img as UploadedFile;
-        let path = './static/img/' + _file["name"];
-        _file.mv(path, function (err) {
-            if (err)
-                res.status(500).json(err.message);
-            else {
-                cloudinary.v2.uploader.upload(path, { "folder": "Ese03 - Upload", use_filename: true })
-                    .catch((error) => {
-                        res.status(500).send("Errore nel caricamento del file su cloudinary");
-                    })
-                    .then((result: UploadApiResponse) => {
-                        //res.send({"url":result.secure_url}) 
-                        let db = req["client"].db(DB_NAME) as _mongodb.Db;
-                        let collection = db.collection("images");
-                        let user = {
-                            "username": req.body.username,
-                            "img": _file.name
-                        }
-                        let request = collection.insertOne(user);
-                        request.then(function (data) {
-                            res.send(data);
-                        });
-                        request.catch(function (err) {
-                            res.status(503).send("Errore esecuzione query");
-                        })
-                        request.finally(function () {
-                            req["client"].close();
-                        })
-                    })
+      let file = req.files.img as UploadedFile;
+      let path = './static/img/' + file["name"];
+      file.mv(path, function (err) {
+        if (err){
+          res.status(500).json(err.message);
+        }
+        else {
+          cloudinary.v2.uploader.upload(path, { "folder": "Ese03 - Upload", use_filename: true })
+          .catch((error) => {
+            res.status(500).send("error uploading file to cloudinary")
+          })
+          .then((result: UploadApiResponse) => {
+            //res.send({"url":result.secure_url})
+            let db = req["client"].db(DB_NAME) as _mongodb.Db;
+            let collection = db.collection("images");
+            let user = {
+              "username": req.body.username,
+              "img": file.name
             }
-        })
+            let request = collection.insertOne(user);
+            request.then((data) => {
+              res.send(data);
+            });
+            request.catch((err) => {
+              res.status(503).send("Sintax error in the query");
+            });
+            request.finally(() => {
+              req["client"].close();
+            });
+          })
+        }
+      })
     }
-})
+  })
+  
 
 
 // **********************************************************************

@@ -10,16 +10,14 @@ import cloudinary, { UploadApiResponse } from "cloudinary";
 
 // Configurazione di Cloudinary
 cloudinary.v2.config({
-    cloud_name: ENVIRONMENT.CLOUD_NAME,
-    api_key: ENVIRONMENT.API_KEY,
-    api_secret: ENVIRONMENT.API_SECRET,
+    cloud_name: ENVIRONMENT.CLOUDINARY.CLOUD_NAME,
+    api_key: ENVIRONMENT.CLOUDINARY.API_KEY,
+    api_secret: ENVIRONMENT.CLOUDINARY.API_SECRET,
     // secure:true // https
 });
 
 const mongoClient = _mongodb.MongoClient;
-//const CONNECTIONSTRING = "mongodb://127.0.0.1:27017"; accesso locale
-// accesso ad Atlas:
-const CONNECTIONSTRING = process.env.MONGODB_URI || "mongodb+srv://simone:admin@cluster0.kmj18.mongodb.net/5B?retryWrites=true&w=majority" // heroku app
+//const CONNECTIONSTRING = "mongodb://127.0.0.1:27017"; accesso locale  
 const DB_NAME = "5B";
 
 // se la prima variabile esiste assegna quel valore, altrimenti mette 1337
@@ -59,8 +57,8 @@ app.use("/", function (req, res, next) {
 app.use("/", express.static("./static"));
 
 // 3. route di lettura parametri post
-app.use("/", bodyParser.json()); // intercetta i parametri in formato json
-app.use("/", bodyParser.urlencoded({ "extended": true })); // parametri body
+app.use("/", bodyParser.json({"limit":"10mb"})); // intercetta i parametri in formato json
+app.use("/", bodyParser.urlencoded({ "extended": true,"limit":"10mb"})); // parametri body
 
 // 4. log dei parametri
 app.use("/", function (req, res, next) {
@@ -99,15 +97,12 @@ app.use(fileUpload({
     "limits ": { "fileSize ": (10 * 1024 * 1024) } // 10 MB
 }));
 
-// 7. base64 fileUpload: limita la dimensione dei parametri POST
-app.use("/", express.json({ "limit": "10mb" }));
-
 // **********************************************************************
 // Elenco delle routes di risposta al client
 // **********************************************************************
 // middleware di apertura della connessione
 app.use("/", function (req, res, next) {
-    mongoClient.connect(CONNECTIONSTRING, function (err, client) {
+    mongoClient.connect(process.env.MONGODB_URI || ENVIRONMENT.CONNECTION_STRING, function (err, client) {
         if (err) {
             res.status(503).send("Errore nella connessione al DB");
         }

@@ -1,9 +1,0 @@
-{
-    "CLOUDINARY":{
-        "CLOUD_NAME": "simo1803" ,
-        "API_KEY": "812249778244756",
-        "API_SECRET": "9d4e5rgi-uCPggXPaO2Wpd3Ccgk",
-        "CLOUDINARY_URL": "CLOUDINARY_URL=cloudinary://812249778244756:9d4e5rgi-uCPggXPaO2Wpd3Ccgk@simo1803"
-    },
-    "CONNECTION_STRING": "mongodb+srv://simone:admin@cluster0.kmj18.mongodb.net/5B?retryWrites=true&w=majority"
-}

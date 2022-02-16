@@ -1,8 +1,11 @@
 import * as http from "http";
+import * as https from "https";
 import * as fs from "fs";
 import express from "express";
 import * as bodyParser from "body-parser";
 import cors from "cors";
+
+let app = express();
 
 // MongoDB
 import * as _mongodb from "mongodb";
@@ -14,15 +17,20 @@ const DB_NAME = "recipeBook";
 
 // se la prima variabile esiste assegna quel valore, altrimenti mette 1337
 let port : number = parseInt(process.env.PORT) || 1337
-let app = express();
 let portHttps : number = 1338;
 let privateKey = fs.readFileSync("keys/privateKey.pem", "utf8");
 let certificate = fs.readFileSync("keys/certificate.crt", "utf8");
+const credentials = { "key": privateKey, "cert": certificate }; 
 
-let server = http.createServer(app);
+let serverHttp = http.createServer(app);
+let serverHttps = https.createServer(credentials,app);
 
-server.listen(port,function(){
-    console.log("server in ascolto sulla porta: " + port);
+serverHttp.listen(port,function(){
+    init();
+});
+
+serverHttps.listen(portHttps,function(){
+    console.log("Server in ascolto sulla porta HTTP: " + port + " , HTTPS:" + portHttps);
     init();
 });
 
@@ -70,6 +78,7 @@ app.use("/",function(req,res,next){
 const whitelist = [ "https://simone-marengo-crud-server.herokuapp.com",
                     "http://simone-marengo-crud-server.herokuapp.com",
                     "http://localhost:1337",
+                    "https://localhost:1338",
                     "http://localhost:4200"];
 const corsOptions = {
  origin: function(origin, callback) {

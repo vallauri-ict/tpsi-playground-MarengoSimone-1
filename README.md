@@ -12,3 +12,4 @@
 4. [MongoDB](https://www.mongodb.com/it-it)
 5. [Express](https://expressjs.com/it/)
 6. [Angular](https://angular.io/)
+7. [Cordova](https://cordova.apache.org/)

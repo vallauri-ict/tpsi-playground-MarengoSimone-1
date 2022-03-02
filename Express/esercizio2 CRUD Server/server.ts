@@ -63,21 +63,12 @@ app.use("/",function(req,res,next){
     next();
 });
 
-// 5. middleware cors, gestisce le richieste cross origin
-const whitelist = ["http://localhost:4200", "http://localhost:1337","https://simone-marengo-crud-server.herokuapp.com"];
+// 5. middleware cors, accetta tutte le richieste
 const corsOptions = {
- origin: function(origin, callback) {
- if (!origin)
- return callback(null, true);
- if (whitelist.indexOf(origin) === -1) {
- var msg = 'The CORS policy for this site does not ' +
- 'allow access from the specified Origin.';
- return callback(new Error(msg), false);
- } 
- else
- return callback(null, true);
- },
- credentials: true
+    origin: function(origin, callback) {
+    return callback(null, true);
+    },
+    credentials: true
 };
 app.use("/", cors(corsOptions));
 
@@ -234,5 +225,5 @@ app.use("/", function (req, res, next) {
 });
 
 app.use(function(err, req, res, next) {
-    console.log("*************** ERRORE CODICE SERVER",err.message, "***************");
+    console.log("*************** ERRORE CODICE SERVER",err.stack, "***************");
 });

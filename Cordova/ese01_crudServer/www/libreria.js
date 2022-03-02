@@ -1,3 +1,5 @@
+const URL = "https://simone-marengo-crud-server.herokuapp.com";
+
 function inviaRichiesta(method, url, parameters = {}) {
     let contentType;
     if (method.toUpperCase() == "GET") {
@@ -9,7 +11,7 @@ function inviaRichiesta(method, url, parameters = {}) {
     }
 
     return $.ajax({
-        url: url, //default: currentPage
+        url: URL + url, //default: currentPage
         type: method,
         data: parameters,
         contentType: contentType,

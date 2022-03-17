@@ -1,0 +1,1 @@
+const googleKey = "AIzaSyBZKYgxbiyRE7DknUpnRP2QHCBVjvLgH7g";

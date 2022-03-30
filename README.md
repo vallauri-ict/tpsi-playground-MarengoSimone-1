@@ -13,3 +13,4 @@
 5. [Express](https://expressjs.com/it/)
 6. [Angular](https://angular.io/)
 7. [Cordova](https://cordova.apache.org/)
+8. [JWT](https://jwt.io/) (JSON Web Tokens)

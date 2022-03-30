@@ -1,5 +1,5 @@
 <h1 align="center">
-  <a href="https://nodejs.org/it/"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTdP3X1Hj9l1GU8UUn1PHR_mWsKVBTFNNDJwUBG1NoKtU6OcvyhH2xP4ToQGB4YWiCwSak&usqp=CAU" width="150px" /></a>
+  <a href="https://cordova.apache.org/"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTdP3X1Hj9l1GU8UUn1PHR_mWsKVBTFNNDJwUBG1NoKtU6OcvyhH2xP4ToQGB4YWiCwSak&usqp=CAU" width="150px" /></a>
 </h1>
 
 Il progetto fu creato da una azienda canadese, Nitobi Software, e presentato nel 2009 come PhoneGap ad un evento Apple di presentazione e riconoscimento di nuovi progetti. 

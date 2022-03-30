@@ -1,5 +1,5 @@
 <h1 align="center">
-  <a href="https://nodejs.org/it/"><img src="http://jwt.io/img/logo-asset.svg" width="300px" /></a>
+  <a href="https://jwt.io/"><img src="http://jwt.io/img/logo-asset.svg" width="300px" /></a>
 </h1>
 
 **Json Web Token (JWT)** è uno standard abbastanza recente di Token Authentication, standardizzato all'inizio del 2015 in cui il server, in corrispondenza della 

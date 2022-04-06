@@ -13,6 +13,7 @@ import {MongoClient, ObjectId}  from "mongodb";
 import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
 import environment from "./environment.json"
+import { createToken, getDefaultLibFileName } from "typescript";
 
 // ***************************** Costanti *************************************
 const app = express();
@@ -23,6 +24,7 @@ const HTTP_PORT = 1337
 const HTTPS_PORT = 1338
 const privateKey = fs.readFileSync("keys/privateKey.pem", "utf8");
 const certificate = fs.readFileSync("keys/certificate.crt", "utf8");
+const jwtKey = fs.readFileSync("keys/jwtKey.pem", "utf8");
 const credentials = { "key": privateKey, "cert": certificate };
 cloudinary.v2.config({
 	cloud_name: environment.cloudinary.CLOUD_NAME,
@@ -113,16 +115,44 @@ app.post("/api/login",function(req,res,next){
                 }
                 else{
                     if(!dbUser){
-                        res.status(401).send("Username o password errati")
+                        res.status(401).send("Username o password errati");
                     }
                     else{
-                        
+                        if(req.body.password){
+                            if(bcrypt.compare(req.body.password,dbUser.password))
+                            {
+                                let token = creaToken(dbUser);
+                                // salvo il token nell'header
+                                res.setHeader("authorization",token);
+                                res.send({"ris":"ok"});
+                            }
+                            else
+                            {
+                                res.status(401).send("Username o password errati");
+                            }
+                        }
+                        else
+                        {
+                            res.status(401).send("Username o password errati");
+                        }
                     }
                 }
             });
         }
     })
 });
+
+function creaToken(dbUser){
+    let data = Math.floor((new Date()).getTime() / 1000); // ottengo i secondi arrotondati
+    let payload = {
+        "_id":dbUser._id,
+        "username":dbUser.username,
+        "iat":data,
+        "exp": data + DURATA_TOKEN // scadenza del token
+    };
+    let token = jwt.sign(payload,privateKey);
+    return token;
+}
 
 
 

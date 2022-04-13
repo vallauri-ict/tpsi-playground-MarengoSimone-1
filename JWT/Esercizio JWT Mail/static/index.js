@@ -41,14 +41,14 @@ $(document).ready(function() {
         let newMailRQ = inviaRichiesta('POST', '/api/newMail', mail);
         newMailRQ.done(function(data) {
             console.log(data);
-            alert("Mail inviata correttamente");
+            alert({"ris":"ok"});
         });
         newMailRQ.fail(errore)
     });
 
 
     /*  Per il logout è inutile inviare una richiesta al server.
-		E' sufficiente cancelare il cookie o il token dal pc client
+		E' sufficiente cancellare il cookie o il token dal pc client
 		Una richiesta al server semplificherebbe la cancellazione del cookie  
 		
 		_btnLogout.on("click", function() {

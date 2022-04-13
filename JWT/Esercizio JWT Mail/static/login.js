@@ -42,12 +42,13 @@ $(document).ready(function() {
 			);
 			request.fail(function(jqXHR, test_status, str_error) {
 				if (jqXHR.status == 401) {  // unauthorized
+					_lblErrore.text(jqXHR.responseText);
 					_lblErrore.show();
 				} else
 					errore(jqXHR, test_status, str_error)
 			});
 			request.done(function(data,test_status,jqXHR) {	
-				alert(jqXHR.getResponseHeader('authorization'));
+				//alert(jqXHR.getResponseHeader('authorization'));
 				window.location.href = "index.html";
 			})			
 		}
